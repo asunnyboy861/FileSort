@@ -24,12 +24,23 @@
 
 ```
 FileSort/
-├── FileSort.xcodeproj/            # Xcode Project
-├── FileSort/                      # Swift Source Files
-│   ├── Views/
-│   ├── Models/
-│   ├── Services/
-│   └── App/
+├── FileSort/                    # iOS App Source Code
+│   ├── FileSort.xcodeproj/      # Xcode Project
+│   ├── FileSort/                # Swift Source Files
+│   │   ├── Views/
+│   │   │   ├── Main/
+│   │   │   ├── Scanner/
+│   │   │   ├── Rules/
+│   │   │   ├── Sort/
+│   │   │   ├── Duplicates/
+│   │   │   ├── History/
+│   │   │   ├── Settings/
+│   │   │   └── Components/
+│   │   ├── ViewModels/
+│   │   ├── Models/
+│   │   ├── Services/
+│   │   └── Intents/
+│   └── ...
 ├── docs/                          # Policy Pages (GitHub Pages source)
 │   ├── index.html
 │   ├── support.html
@@ -38,9 +49,8 @@ FileSort/
 ├── .github/workflows/
 │   └── deploy.yml
 ├── us.md
-├── keytext.md
+├── price.md
 ├── capabilities.md
 ├── icon.md
-├── price.md
 └── nowgit.md
 ```
