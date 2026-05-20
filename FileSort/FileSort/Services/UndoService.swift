@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-actor UndoService {
+struct UndoService {
     static let maxBatches = 50
 
     func saveBatch(records: [MoveRecord], modelContext: ModelContext) {

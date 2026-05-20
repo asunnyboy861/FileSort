@@ -47,9 +47,21 @@ final class SortViewModel {
         sortResult = SortResult(successCount: result.successCount, failCount: result.failCount, totalFiles: pending.count)
         if !result.moveRecords.isEmpty {
             let undoService = UndoService()
-            await undoService.saveBatch(records: result.moveRecords, modelContext: modelContext)
+            undoService.saveBatch(records: result.moveRecords, modelContext: modelContext)
         }
+        updateWidgetData(successCount: result.successCount)
         isSorting = false
+    }
+
+    private func updateWidgetData(successCount: Int) {
+        let appGroupID = "group.com.zzoutuo.FileSort"
+        guard let defaults = UserDefaults(suiteName: appGroupID) else { return }
+        let currentTotal = defaults.integer(forKey: "widget_fileCount")
+        defaults.set(currentTotal + successCount, forKey: "widget_fileCount")
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        defaults.set(formatter.string(from: Date()), forKey: "widget_lastSortDate")
     }
 
     func clearPlan() {

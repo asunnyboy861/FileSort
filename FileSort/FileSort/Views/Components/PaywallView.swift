@@ -25,6 +25,11 @@ struct PaywallView: View {
             .padding()
         }
         .background(.background)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button("Close") { dismiss() }
+            }
+        }
     }
 
     private var headerSection: some View {

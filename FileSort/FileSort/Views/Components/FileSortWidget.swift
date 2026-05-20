@@ -8,19 +8,30 @@ struct FileSortEntry: TimelineEntry {
 }
 
 struct FileSortProvider: TimelineProvider {
+    let appGroupID = "group.com.zzoutuo.FileSort"
+
     func placeholder(in context: Context) -> FileSortEntry {
         FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
     }
 
     func getSnapshot(in context: Context, completion: @escaping (FileSortEntry) -> Void) {
-        let entry = FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
+        let entry = readSharedEntry()
         completion(entry)
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FileSortEntry>) -> Void) {
-        let entry = FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
+        let entry = readSharedEntry()
         let timeline = Timeline(entries: [entry], policy: .atEnd)
         completion(timeline)
+    }
+
+    private func readSharedEntry() -> FileSortEntry {
+        guard let defaults = UserDefaults(suiteName: appGroupID) else {
+            return FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
+        }
+        let fileCount = defaults.integer(forKey: "widget_fileCount")
+        let lastSortDate = defaults.string(forKey: "widget_lastSortDate")
+        return FileSortEntry(date: Date(), fileCount: fileCount, lastSortDate: lastSortDate)
     }
 }
 

@@ -17,12 +17,21 @@ struct DirectoryPickerView: UIViewControllerRepresentable {
 
     class Coordinator: NSObject, UIDocumentPickerDelegate {
         let onPick: (URL) -> Void
+        private var accessedURL: URL?
+
         init(onPick: @escaping (URL) -> Void) { self.onPick = onPick }
+
         func documentPicker(_ controller: UIDocumentPickerViewController, didPickDocumentsAt urls: [URL]) {
             if let url = urls.first {
-                _ = url.startAccessingSecurityScopedResource()
+                accessedURL?.stopAccessingSecurityScopedResource()
+                let _ = url.startAccessingSecurityScopedResource()
+                accessedURL = url
                 onPick(url)
             }
+        }
+
+        deinit {
+            accessedURL?.stopAccessingSecurityScopedResource()
         }
     }
 }

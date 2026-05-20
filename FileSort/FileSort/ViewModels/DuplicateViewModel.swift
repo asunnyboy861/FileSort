@@ -49,7 +49,7 @@ final class DuplicateViewModel {
 
     func deleteSelected() async -> (deleted: Int, failed: Int) {
         let urls = Array(selectedForDeletion)
-        let result = duplicateService.deleteFiles(urls)
+        let result = await duplicateService.deleteFiles(urls)
         selectedForDeletion.removeAll()
         duplicateGroups = duplicateGroups.map { group in
             let remaining = group.files.filter { !urls.contains($0.url) }

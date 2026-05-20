@@ -45,17 +45,19 @@ struct DuplicateDetectService {
         return hash.compactMap { String(format: "%02x", $0) }.joined()
     }
 
-    func deleteFiles(_ urls: [URL]) -> (deleted: Int, failed: Int) {
-        var deleted = 0
-        var failed = 0
-        for url in urls {
-            do {
-                try FileManager.default.removeItem(at: url)
-                deleted += 1
-            } catch {
-                failed += 1
+    func deleteFiles(_ urls: [URL]) async -> (deleted: Int, failed: Int) {
+        await withCheckedContinuation { continuation in
+            var deleted = 0
+            var failed = 0
+            for url in urls {
+                do {
+                    try FileManager.default.removeItem(at: url)
+                    deleted += 1
+                } catch {
+                    failed += 1
+                }
             }
+            continuation.resume(returning: (deleted, failed))
         }
-        return (deleted, failed)
     }
 }

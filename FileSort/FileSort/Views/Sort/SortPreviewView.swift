@@ -154,7 +154,12 @@ struct SortPreviewView: View {
 
     private func generatePlan() async {
         guard let sourceDir = sourceDirectory else { return }
-        let rules = (try? modelContext.fetch(FetchDescriptor<SortRule>())) ?? []
+        var rules = (try? modelContext.fetch(FetchDescriptor<SortRule>())) ?? []
+        if rules.isEmpty {
+            let ruleVM = RuleEngineViewModel()
+            ruleVM.createDefaultRules(modelContext: modelContext)
+            rules = (try? modelContext.fetch(FetchDescriptor<SortRule>())) ?? []
+        }
         await sortVM.generateSortPlan(files: scannedFiles, rules: rules, targetBaseURL: sourceDir)
     }
 }
