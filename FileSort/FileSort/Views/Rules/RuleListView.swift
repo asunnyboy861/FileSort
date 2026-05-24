@@ -6,6 +6,7 @@ struct RuleListView: View {
     @State private var ruleVM = RuleEngineViewModel()
     @State private var showAddRule = false
     @State private var editingRule: SortRule?
+    @State private var showPaywall = false
     @Environment(PurchaseManager.self) private var purchaseManager
 
     var body: some View {
@@ -37,7 +38,11 @@ struct RuleListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    showAddRule = true
+                    if purchaseManager.canAddRule(currentCount: ruleVM.rules.count) {
+                        showAddRule = true
+                    } else {
+                        showPaywall = true
+                    }
                 } label: {
                     Image(systemName: "plus")
                 }
@@ -60,6 +65,11 @@ struct RuleListView: View {
                 RuleEditView(rule: rule) { updatedRule in
                     ruleVM.updateRule(updatedRule, modelContext: modelContext)
                 }
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                PaywallView()
             }
         }
         .onAppear {

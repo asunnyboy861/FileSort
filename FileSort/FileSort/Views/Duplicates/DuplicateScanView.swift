@@ -4,14 +4,16 @@ struct DuplicateScanView: View {
     let files: [ScannedFile]
     @State private var duplicateVM = DuplicateViewModel()
     @Environment(PurchaseManager.self) private var purchaseManager
+    @State private var showPaywall = false
 
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
                 if duplicateVM.isScanning {
                     VStack(spacing: 12) {
-                        ProgressView()
-                        Text("Scanning for duplicates...")
+                        ProgressView(value: duplicateVM.scanProgress)
+                            .tint(.blue)
+                        Text("Scanning... \(Int(duplicateVM.scanProgress * 100))%")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
@@ -31,13 +33,19 @@ struct DuplicateScanView: View {
         .navigationTitle("Duplicates")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            if purchaseManager.isPremium {
+            if purchaseManager.canDetectDuplicatesFree() {
                 await duplicateVM.scanForDuplicates(in: files)
+                purchaseManager.consumeFreeDuplicateScan()
             }
         }
         .overlay {
-            if !purchaseManager.isPremium {
+            if !purchaseManager.isPremium && !purchaseManager.canDetectDuplicatesFree() && duplicateVM.duplicateGroups.isEmpty {
                 paywallOverlay
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                PaywallView()
             }
         }
     }
@@ -111,8 +119,8 @@ struct DuplicateScanView: View {
                 Text("Upgrade to find and remove duplicate files")
                     .font(.subheadline)
                     .foregroundStyle(.white.opacity(0.8))
-                NavigationLink {
-                    PaywallView()
+                Button {
+                    showPaywall = true
                 } label: {
                     Text("Upgrade to Pro")
                         .font(.headline)

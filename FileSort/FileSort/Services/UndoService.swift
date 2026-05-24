@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 struct UndoService {
-    static let maxBatches = 50
+    static let maxBatches = AppConstants.Limits.maxUndoBatches
 
     func saveBatch(records: [MoveRecord], modelContext: ModelContext) {
         trimOldBatches(modelContext: modelContext)

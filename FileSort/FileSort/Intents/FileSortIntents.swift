@@ -31,7 +31,12 @@ struct SortNowIntent: AppIntent {
         let (actions, _) = await ruleEngine.matchFiles(files, rules: rules, targetBaseURL: targetURL)
         let moveService = FileMoveService()
         let result = await moveService.executeActions(actions)
-        return .result(value: "Sorted \(result.successCount) files successfully. \(result.failCount) failed.")
+        var message = "Sorted \(result.successCount) files successfully. \(result.failCount) failed."
+        if !result.failedActions.isEmpty {
+            let names = result.failedActions.prefix(3).map { $0.fileName }.joined(separator: ", ")
+            message += " Failed: \(names)"
+        }
+        return .result(value: message)
     }
 }
 
@@ -76,7 +81,12 @@ struct SortDirectoryIntent: AppIntent {
         let (actions, _) = await ruleEngine.matchFiles(files, rules: rules, targetBaseURL: url)
         let moveService = FileMoveService()
         let result = await moveService.executeActions(actions)
-        return .result(value: "Sorted \(result.successCount) files in \(directoryPath). \(result.failCount) failed.")
+        var message = "Sorted \(result.successCount) files in \(directoryPath). \(result.failCount) failed."
+        if !result.failedActions.isEmpty {
+            let names = result.failedActions.prefix(3).map { $0.fileName }.joined(separator: ", ")
+            message += " Failed: \(names)"
+        }
+        return .result(value: message)
     }
 }
 

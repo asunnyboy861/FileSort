@@ -50,10 +50,10 @@ struct PaywallView: View {
         VStack(alignment: .leading, spacing: 12) {
             FeatureRow(icon: "infinity", text: "Unlimited Custom Rules", isFree: false)
             FeatureRow(icon: "doc.on.doc.fill", text: "Duplicate File Detection", isFree: false)
+            FeatureRow(icon: "arrow.uturn.backward", text: "Unlimited Undo History", isFree: false)
             FeatureRow(icon: "square.grid.2x2.fill", text: "Home Screen Widget", isFree: false)
             FeatureRow(icon: "waveform.path.badge.plus", text: "Siri Shortcuts Integration", isFree: false)
-            FeatureRow(icon: "arrow.uturn.backward", text: "Unlimited Undo History", isFree: false)
-            FeatureRow(icon: "icloud.fill", text: "iCloud Drive Deep Access", isFree: false)
+            FeatureRow(icon: "sort.up", text: "Unlimited Monthly Sorts", isFree: false)
         }
         .padding()
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -127,9 +127,9 @@ struct PaywallView: View {
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
             HStack(spacing: 16) {
-                Link("Privacy Policy", destination: URL(string: "https://asunnyboy861.github.io/FileSort/privacy.html")!)
+                Link("Privacy Policy", destination: URL(string: AppConstants.URLs.privacy)!)
                     .font(.caption2)
-                Link("Terms of Use", destination: URL(string: "https://asunnyboy861.github.io/FileSort/terms.html")!)
+                Link("Terms of Use", destination: URL(string: AppConstants.URLs.terms)!)
                     .font(.caption2)
             }
         }

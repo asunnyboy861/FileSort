@@ -9,11 +9,91 @@ final class PurchaseManager {
     var isLoading = true
     var purchaseError: String?
 
-    static let monthlyID = "com.zzoutuo.FileSort.monthly"
-    static let yearlyID = "com.zzoutuo.FileSort.yearly"
-    static let lifetimeID = "com.zzoutuo.FileSort.lifetime"
+    static let monthlyID = AppConstants.IAP.monthlyID
+    static let yearlyID = AppConstants.IAP.yearlyID
+    static let lifetimeID = AppConstants.IAP.lifetimeID
 
     var isPremium: Bool { !purchasedProductIDs.isEmpty }
+
+    enum FeatureGate {
+        case customRules
+        case duplicateDetection
+        case widgetAccess
+        case shortcutsAccess
+        case unlimitedUndo
+    }
+
+    func canAccess(_ feature: FeatureGate) -> Bool {
+        switch feature {
+        case .customRules, .duplicateDetection, .widgetAccess, .shortcutsAccess, .unlimitedUndo:
+            return isPremium
+        }
+    }
+
+    func canAddRule(currentCount: Int) -> Bool {
+        return isPremium || currentCount < AppConstants.Limits.freeMaxRules
+    }
+
+    func canUndoBatch(freeBatchUsed: Bool) -> Bool {
+        return isPremium || !freeBatchUsed
+    }
+
+    var freeSortsRemaining: Int {
+        if isPremium { return AppConstants.Limits.freeMonthlySorts }
+        let (count, _) = currentMonthlyUsage(for: AppConstants.FreeUsage.sortCountKey, monthKey: AppConstants.FreeUsage.sortMonthKey)
+        return max(0, AppConstants.Limits.freeMonthlySorts - count)
+    }
+
+    var freeDuplicatesRemaining: Int {
+        if isPremium { return AppConstants.FreeUsage.freeMonthlyDuplicates }
+        let (count, _) = currentMonthlyUsage(for: AppConstants.FreeUsage.duplicateCountKey, monthKey: AppConstants.FreeUsage.duplicateMonthKey)
+        return max(0, AppConstants.FreeUsage.freeMonthlyDuplicates - count)
+    }
+
+    var freeSortsUsedThisMonth: Int {
+        if isPremium { return 0 }
+        let (count, _) = currentMonthlyUsage(for: AppConstants.FreeUsage.sortCountKey, monthKey: AppConstants.FreeUsage.sortMonthKey)
+        return count
+    }
+
+    func canSortFree() -> Bool {
+        return isPremium || freeSortsRemaining > 0
+    }
+
+    func canDetectDuplicatesFree() -> Bool {
+        return isPremium || freeDuplicatesRemaining > 0
+    }
+
+    func consumeFreeSort() {
+        if isPremium { return }
+        let (count, currentMonth) = currentMonthlyUsage(for: AppConstants.FreeUsage.sortCountKey, monthKey: AppConstants.FreeUsage.sortMonthKey)
+        UserDefaults.standard.set(count + 1, forKey: AppConstants.FreeUsage.sortCountKey)
+        UserDefaults.standard.set(currentMonth, forKey: AppConstants.FreeUsage.sortMonthKey)
+    }
+
+    func consumeFreeDuplicateScan() {
+        if isPremium { return }
+        let (count, currentMonth) = currentMonthlyUsage(for: AppConstants.FreeUsage.duplicateCountKey, monthKey: AppConstants.FreeUsage.duplicateMonthKey)
+        UserDefaults.standard.set(count + 1, forKey: AppConstants.FreeUsage.duplicateCountKey)
+        UserDefaults.standard.set(currentMonth, forKey: AppConstants.FreeUsage.duplicateMonthKey)
+    }
+
+    private func currentMonthlyUsage(for countKey: String, monthKey: String) -> (count: Int, month: String) {
+        let currentMonth = monthString()
+        let savedMonth = UserDefaults.standard.string(forKey: monthKey) ?? ""
+        if savedMonth != currentMonth {
+            UserDefaults.standard.set(0, forKey: countKey)
+            UserDefaults.standard.set(currentMonth, forKey: monthKey)
+            return (0, currentMonth)
+        }
+        return (UserDefaults.standard.integer(forKey: countKey), currentMonth)
+    }
+
+    private func monthString() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM"
+        return formatter.string(from: Date())
+    }
 
     var monthlyProduct: Product? { products.first { $0.id == Self.monthlyID } }
     var yearlyProduct: Product? { products.first { $0.id == Self.yearlyID } }
@@ -32,7 +112,7 @@ final class PurchaseManager {
 
     func loadProducts() async {
         do {
-            let storeProducts = try await Product.products(for: [Self.monthlyID, Self.yearlyID, Self.lifetimeID])
+            let storeProducts = try await Product.products(for: AppConstants.IAP.allIDs)
             products = storeProducts
             await updatePurchasedProducts()
         } catch {
@@ -77,11 +157,15 @@ final class PurchaseManager {
             for await result in Transaction.updates {
                 guard let self else { return }
                 do {
-                    let transaction = try self.checkVerified(result)
-                    self.purchasedProductIDs.insert(transaction.productID)
+                    let transaction = try await self.checkVerified(result)
+                    _ = await MainActor.run {
+                        self.purchasedProductIDs.insert(transaction.productID)
+                    }
                     await transaction.finish()
                 } catch {
-                    self.purchaseError = error.localizedDescription
+                    _ = await MainActor.run {
+                        self.purchaseError = error.localizedDescription
+                    }
                 }
             }
         }

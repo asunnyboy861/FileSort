@@ -5,7 +5,8 @@ struct SortPreviewView: View {
     let scannedFiles: [ScannedFile]
     let sourceDirectory: URL?
     @State private var sortVM = SortViewModel()
-    @State private var showResult = false
+    @State private var navigateToResult = false
+    @State private var showPaywall = false
     @Environment(\.modelContext) private var modelContext
     @Environment(PurchaseManager.self) private var purchaseManager
 
@@ -16,7 +17,16 @@ struct SortPreviewView: View {
                     ProgressView("Generating sort plan...")
                         .padding()
                 } else if sortVM.sortResult != nil {
-                    sortResultSection
+                    Color.clear
+                        .navigationDestination(isPresented: $navigateToResult) {
+                            SortResultView(
+                                successCount: sortVM.sortResult?.successCount ?? 0,
+                                failCount: sortVM.sortResult?.failCount ?? 0,
+                                totalFiles: sortVM.sortResult?.totalFiles ?? 0,
+                                failedFiles: sortVM.sortResult?.failedFiles ?? []
+                            )
+                        }
+                        .hidden()
                 } else if sortVM.sortActions.isEmpty {
                     planGenerationPrompt
                 } else {
@@ -104,52 +114,49 @@ struct SortPreviewView: View {
     }
 
     private var executeButton: some View {
-        Button {
-            Task { await sortVM.executeSort(modelContext: modelContext) }
-        } label: {
-            Label("Execute Sort", systemImage: "arrow.triangle.branch")
-                .font(.headline)
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .disabled(sortVM.isSorting)
-    }
-
-    private var sortResultSection: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 56))
-                .foregroundStyle(.green)
-            Text("Sort Complete!")
-                .font(.title2.bold())
-            HStack(spacing: 24) {
-                VStack {
-                    Text("\(sortVM.sortResult?.successCount ?? 0)")
-                        .font(.title.bold())
-                        .foregroundStyle(.green)
-                    Text("Moved")
+        VStack(spacing: 12) {
+            if purchaseManager.canSortFree() {
+                Button {
+                    Task {
+                        await sortVM.executeSort(modelContext: modelContext)
+                        if sortVM.sortResult != nil {
+                            purchaseManager.consumeFreeSort()
+                            navigateToResult = true
+                        }
+                    }
+                } label: {
+                    Label("Execute Sort", systemImage: "arrow.triangle.branch")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .disabled(sortVM.isSorting)
+                if !purchaseManager.isPremium && purchaseManager.freeSortsRemaining > 0 {
+                    Text("Uses 1 of \(purchaseManager.freeSortsRemaining) free sort\(purchaseManager.freeSortsRemaining == 1 ? "" : "s") left")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                VStack {
-                    Text("\(sortVM.sortResult?.failCount ?? 0)")
-                        .font(.title.bold())
-                        .foregroundStyle(.red)
-                    Text("Failed")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+            } else {
+                Button {
+                    showPaywall = true
+                } label: {
+                    Label("Upgrade to Sort — Pro", systemImage: "crown.fill")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
                 }
-            }
-            NavigationLink {
-                HistoryView()
-            } label: {
-                Text("View History")
-                    .font(.headline)
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                Text("You've used all \(AppConstants.Limits.freeMonthlySorts) free sorts this month")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
             }
         }
-        .padding()
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                PaywallView()
+            }
+        }
     }
 
     private func generatePlan() async {

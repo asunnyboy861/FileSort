@@ -8,6 +8,7 @@ final class DuplicateViewModel {
     var scanError: String?
     var totalWastedSpace: Int64 = 0
     var selectedForDeletion: Set<URL> = []
+    var scanProgress: Double = 0
 
     private let duplicateService = DuplicateDetectService()
 
@@ -23,13 +24,12 @@ final class DuplicateViewModel {
         isScanning = true
         scanError = nil
         selectedForDeletion.removeAll()
-        do {
-            let groups = try await duplicateService.findDuplicates(in: files)
-            duplicateGroups = groups
-            totalWastedSpace = groups.reduce(0) { $0 + $1.totalWastedSpace }
-        } catch {
-            scanError = error.localizedDescription
+        scanProgress = 0
+        let groups = await duplicateService.findDuplicates(in: files) { current, total in
+            self.scanProgress = total > 0 ? Double(current) / Double(total) : 0
         }
+        duplicateGroups = groups
+        totalWastedSpace = groups.reduce(0) { $0 + $1.totalWastedSpace }
         isScanning = false
     }
 

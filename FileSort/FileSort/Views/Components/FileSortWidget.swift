@@ -8,8 +8,6 @@ struct FileSortEntry: TimelineEntry {
 }
 
 struct FileSortProvider: TimelineProvider {
-    let appGroupID = "group.com.zzoutuo.FileSort"
-
     func placeholder(in context: Context) -> FileSortEntry {
         FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
     }
@@ -26,11 +24,11 @@ struct FileSortProvider: TimelineProvider {
     }
 
     private func readSharedEntry() -> FileSortEntry {
-        guard let defaults = UserDefaults(suiteName: appGroupID) else {
+        guard let defaults = UserDefaults(suiteName: AppConstants.AppGroup.id) else {
             return FileSortEntry(date: Date(), fileCount: 0, lastSortDate: nil)
         }
-        let fileCount = defaults.integer(forKey: "widget_fileCount")
-        let lastSortDate = defaults.string(forKey: "widget_lastSortDate")
+        let fileCount = defaults.integer(forKey: AppConstants.Widget.fileCountKey)
+        let lastSortDate = defaults.string(forKey: AppConstants.Widget.lastSortDateKey)
         return FileSortEntry(date: Date(), fileCount: fileCount, lastSortDate: lastSortDate)
     }
 }
@@ -65,7 +63,7 @@ struct FileSortWidgetEntryView: View {
 }
 
 struct FileSortWidget: Widget {
-    let kind: String = "FileSortWidget"
+    let kind: String = AppConstants.Widget.kind
 
     var body: some WidgetConfiguration {
         StaticConfiguration(kind: kind, provider: FileSortProvider()) { entry in

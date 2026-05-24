@@ -1,6 +1,6 @@
 # Pricing Configuration
 
-## Monetization Model: Subscription (Freemium)
+## Monetization Model: Freemium with Monthly Free Usage
 
 ## Subscription Group
 - **Group Name**: FileSort Premium
@@ -35,33 +35,35 @@
 ## Free Tier Features
 - ✅ Scan files (unlimited)
 - ✅ Smart recommendations (default category rules)
-- ✅ One-tap sort (basic)
+- ✅ Sort files (3 per month, resets monthly)
 - ✅ Sort result preview
-- ✅ Undo last sort batch
+- ✅ Duplicate detection (1 scan per month, resets monthly)
+- ✅ Undo last sort batch (1 batch)
 - ✅ Celebration & stats
 - ❌ Custom rules (limit: 1 rule)
-- ❌ Duplicate detection
 - ❌ Widget
 - ❌ Siri Shortcuts
 - ❌ Unlimited undo history (free: 1 batch)
-- ❌ iCloud Drive access
+- ❌ Unlimited monthly sorts
 
 ## Premium Tier Features
 - ✅ All free features
 - ✅ Unlimited custom rules
-- ✅ Duplicate file detection (SHA256)
+- ✅ Unlimited monthly sorts
+- ✅ Duplicate file detection (unlimited, SHA256)
 - ✅ Home screen widget
 - ✅ Siri Shortcuts integration
 - ✅ Unlimited undo history (50 batches)
-- ✅ iCloud Drive deep integration
 - ✅ Priority support
 
-## Free Trial
-- **Duration**: 3 days
-- **Type**: Free trial (auto-converts to monthly)
+## Monthly Free Usage
+- **Free Sorts**: 3 per calendar month (resets on the 1st)
+- **Free Duplicate Scans**: 1 per calendar month (resets on the 1st)
+- **Tracking**: Stored locally via UserDefaults with month key
+- **Premium Override**: Premium users bypass all usage limits
 
 ## Policy Pages Required
-- Support Page: ✅ (Must include subscription management info)
+- Support Page: ✅ (Must include subscription management & free usage info)
 - Privacy Policy: ✅
 - Terms of Use: ✅ (REQUIRED for subscription apps)
 
@@ -69,12 +71,14 @@
 - [x] Auto-renewal terms included in Terms
 - [x] Cancellation instructions included
 - [x] Pricing clearly stated
-- [x] Free trial terms included
+- [x] Free usage limits clearly disclosed
+- [x] Lifetime purchase option disclosed
 - [x] Restore purchases functionality implemented
 
 ## StoreKit 2 Implementation Plan
-- `PurchaseManager.swift`: Product fetching, purchase, restore, status tracking
+- `PurchaseManager.swift`: Product fetching, purchase, restore, status tracking, free usage tracking
 - `PaywallView.swift`: Subscription UI with feature comparison
 - Product IDs: com.zzoutuo.FileSort.monthly, com.zzoutuo.FileSort.yearly, com.zzoutuo.FileSort.lifetime
 - Use `Transaction.currentEntitlements` for status checking
 - Use `AppStore.sync()` for restore
+- Free usage tracked via `AppConstants.FreeUsage` keys in UserDefaults

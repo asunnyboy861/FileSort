@@ -18,6 +18,7 @@ final class SortViewModel {
         let successCount: Int
         let failCount: Int
         let totalFiles: Int
+        let failedFiles: [(fileName: String, error: String)]
     }
 
     var hasConflicts: Bool { !conflicts.isEmpty }
@@ -44,7 +45,7 @@ final class SortViewModel {
             return true
         }
         let result = await fileMoveService.executeActions(pending, conflictResolution: conflictResolution)
-        sortResult = SortResult(successCount: result.successCount, failCount: result.failCount, totalFiles: pending.count)
+        sortResult = SortResult(successCount: result.successCount, failCount: result.failCount, totalFiles: pending.count, failedFiles: result.failedActions)
         if !result.moveRecords.isEmpty {
             let undoService = UndoService()
             undoService.saveBatch(records: result.moveRecords, modelContext: modelContext)
@@ -54,14 +55,13 @@ final class SortViewModel {
     }
 
     private func updateWidgetData(successCount: Int) {
-        let appGroupID = "group.com.zzoutuo.FileSort"
-        guard let defaults = UserDefaults(suiteName: appGroupID) else { return }
-        let currentTotal = defaults.integer(forKey: "widget_fileCount")
-        defaults.set(currentTotal + successCount, forKey: "widget_fileCount")
+        guard let defaults = UserDefaults(suiteName: AppConstants.AppGroup.id) else { return }
+        let currentTotal = defaults.integer(forKey: AppConstants.Widget.fileCountKey)
+        defaults.set(currentTotal + successCount, forKey: AppConstants.Widget.fileCountKey)
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        defaults.set(formatter.string(from: Date()), forKey: "widget_lastSortDate")
+        defaults.set(formatter.string(from: Date()), forKey: AppConstants.Widget.lastSortDateKey)
     }
 
     func clearPlan() {

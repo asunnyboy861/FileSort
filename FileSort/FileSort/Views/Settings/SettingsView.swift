@@ -80,13 +80,13 @@ struct SettingsView: View {
 
     private var legalSection: some View {
         Section {
-            Link(destination: URL(string: "https://asunnyboy861.github.io/FileSort/support.html")!) {
+            Link(destination: URL(string: AppConstants.URLs.support)!) {
                 Label("Support", systemImage: "questionmark.circle")
             }
-            Link(destination: URL(string: "https://asunnyboy861.github.io/FileSort/privacy.html")!) {
+            Link(destination: URL(string: AppConstants.URLs.privacy)!) {
                 Label("Privacy Policy", systemImage: "hand.raised")
             }
-            Link(destination: URL(string: "https://asunnyboy861.github.io/FileSort/terms.html")!) {
+            Link(destination: URL(string: AppConstants.URLs.terms)!) {
                 Label("Terms of Use", systemImage: "doc.text")
             }
             NavigationLink {

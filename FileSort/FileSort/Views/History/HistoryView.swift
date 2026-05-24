@@ -4,6 +4,7 @@ import SwiftData
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var historyVM = HistoryViewModel()
+    @State private var showPaywall = false
     @Environment(PurchaseManager.self) private var purchaseManager
 
     var body: some View {
@@ -22,12 +23,16 @@ struct HistoryView: View {
                         }
                         .swipeActions(edge: .leading) {
                             Button {
-                                Task { _ = await historyVM.undoBatch(item, modelContext: modelContext) }
+                                let isFirst = item == historyVM.historyItems.first
+                                if purchaseManager.canUndoBatch(freeBatchUsed: !isFirst) {
+                                    Task { _ = await historyVM.undoBatch(item, modelContext: modelContext) }
+                                } else {
+                                    showPaywall = true
+                                }
                             } label: {
                                 Label("Undo", systemImage: "arrow.uturn.backward")
                             }
                             .tint(.orange)
-                            .disabled(!purchaseManager.isPremium)
                         }
                 }
             }
@@ -36,6 +41,11 @@ struct HistoryView: View {
         .overlay {
             if historyVM.isUndoing {
                 ProgressView("Undoing...")
+            }
+        }
+        .sheet(isPresented: $showPaywall) {
+            NavigationStack {
+                PaywallView()
             }
         }
         .onAppear {

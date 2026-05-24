@@ -26,6 +26,7 @@ struct DirectoryPickerView: UIViewControllerRepresentable {
                 accessedURL?.stopAccessingSecurityScopedResource()
                 let _ = url.startAccessingSecurityScopedResource()
                 accessedURL = url
+                try? BookmarkService().saveBookmark(for: url)
                 onPick(url)
             }
         }

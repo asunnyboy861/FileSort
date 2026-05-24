@@ -1,10 +1,18 @@
 import Foundation
 
 actor FileMoveService {
-    func executeActions(_ actions: [SortAction], conflictResolution: Conflict.ConflictResolution = .rename) async -> (successCount: Int, failCount: Int, moveRecords: [MoveRecord]) {
+    struct MoveResult {
+        let successCount: Int
+        let failCount: Int
+        let moveRecords: [MoveRecord]
+        let failedActions: [(fileName: String, error: String)]
+    }
+
+    func executeActions(_ actions: [SortAction], conflictResolution: Conflict.ConflictResolution = .rename) async -> MoveResult {
         var successCount = 0
         var failCount = 0
         var moveRecords: [MoveRecord] = []
+        var failedActions: [(fileName: String, error: String)] = []
         for var action in actions {
             do {
                 let destURL = try resolveDestination(action.destinationURL, resolution: conflictResolution)
@@ -19,9 +27,10 @@ actor FileMoveService {
             } catch {
                 action.status = .failed(error.localizedDescription)
                 failCount += 1
+                failedActions.append((fileName: action.file.url.lastPathComponent, error: error.localizedDescription))
             }
         }
-        return (successCount, failCount, moveRecords)
+        return MoveResult(successCount: successCount, failCount: failCount, moveRecords: moveRecords, failedActions: failedActions)
     }
 
     func undoMoves(_ records: [MoveRecord]) async -> (successCount: Int, failCount: Int) {
