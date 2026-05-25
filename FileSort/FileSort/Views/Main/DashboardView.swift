@@ -49,7 +49,7 @@ struct DashboardView: View {
             .navigationDestination(isPresented: $showSortPreview) {
                 SortPreviewView(scannedFiles: scannerVM.scannedFiles, sourceDirectory: scannerVM.selectedDirectory)
             }
-            .fullScreenCover(isPresented: Binding(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = $0 })) {
+            .fullScreenCover(isPresented: Binding(get: { !hasSeenOnboarding }, set: { hasSeenOnboarding = !$0 })) {
                 OnboardingView(hasSeenOnboarding: $hasSeenOnboarding)
             }
             .sheet(isPresented: $showPaywall) {
