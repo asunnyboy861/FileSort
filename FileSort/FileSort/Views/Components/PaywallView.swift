@@ -110,7 +110,7 @@ struct PaywallView: View {
                 ProgressView()
                     .tint(.white)
             } else {
-                Text("Subscribe")
+                Text(selectedTier == .lifetime ? "Purchase" : "Subscribe")
                     .font(.headline)
             }
         }
@@ -122,10 +122,17 @@ struct PaywallView: View {
 
     private var legalLinks: some View {
         VStack(spacing: 4) {
-            Text("Subscription automatically renews unless canceled at least 24 hours before the end of the current period.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+            if selectedTier == .lifetime {
+                Text("One-time purchase. No recurring charges.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            } else {
+                Text("Subscription automatically renews unless canceled at least 24 hours before the end of the current period.")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
             HStack(spacing: 16) {
                 Link("Privacy Policy", destination: URL(string: AppConstants.URLs.privacy)!)
                     .font(.caption2)

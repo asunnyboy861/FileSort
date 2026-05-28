@@ -30,8 +30,9 @@ final class PurchaseManager {
         }
     }
 
-    func canAddRule(currentCount: Int) -> Bool {
-        return isPremium || currentCount < AppConstants.Limits.freeMaxRules
+    func canAddRule(currentCount: Int, defaultCount: Int = 0) -> Bool {
+        let customCount = currentCount - defaultCount
+        return isPremium || customCount < AppConstants.Limits.freeMaxRules
     }
 
     func canUndoBatch(freeBatchUsed: Bool) -> Bool {

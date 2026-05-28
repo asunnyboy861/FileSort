@@ -11,9 +11,10 @@ final class SortRule {
     var targetFolderPath: String
     var priority: Int
     var isEnabled: Bool
+    var isDefault: Bool
     var createdAt: Date
 
-    init(name: String = "", conditionType: String = "fileType", conditionValue: String = "", conditionOperator: String = "equals", targetFolderPath: String = "", priority: Int = 0, isEnabled: Bool = true) {
+    init(name: String = "", conditionType: String = "fileType", conditionValue: String = "", conditionOperator: String = "equals", targetFolderPath: String = "", priority: Int = 0, isEnabled: Bool = true, isDefault: Bool = false) {
         self.id = UUID()
         self.name = name
         self.conditionType = conditionType
@@ -22,6 +23,7 @@ final class SortRule {
         self.targetFolderPath = targetFolderPath
         self.priority = priority
         self.isEnabled = isEnabled
+        self.isDefault = isDefault
         self.createdAt = Date()
     }
 

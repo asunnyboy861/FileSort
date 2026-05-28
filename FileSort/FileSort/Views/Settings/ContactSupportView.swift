@@ -10,6 +10,9 @@ struct ContactSupportView: View {
     @State private var submitResult: SubmitResult?
     @State private var showCustomSubject = false
 
+    @State private var showSuccessAlert = false
+    @State private var alertMessage = ""
+
     private let subjects = ["General", "Feature Suggestion", "Bug Report", "Usage Question", "Performance Issue", "UI Improvement", "Other"]
     private let backendURL = "https://feedback-board.iocompile67692.workers.dev"
 
@@ -34,6 +37,11 @@ struct ContactSupportView: View {
         }
         .navigationTitle("Contact Support")
         .navigationBarTitleDisplayMode(.inline)
+        .alert("Feedback", isPresented: $showSuccessAlert) {
+            Button("OK") { }
+        } message: {
+            Text(alertMessage)
+        }
     }
 
     private var subjectSection: some View {
@@ -136,11 +144,17 @@ struct ContactSupportView: View {
                 email = ""
                 message = ""
                 customSubject = ""
+                alertMessage = "Thank you! Your feedback has been submitted successfully."
+                showSuccessAlert = true
             } else {
                 submitResult = .failure("Server error. Please try again.")
+                alertMessage = "Server error. Please try again."
+                showSuccessAlert = true
             }
         } catch {
             submitResult = .failure(error.localizedDescription)
+            alertMessage = "Failed to submit: \(error.localizedDescription)"
+            showSuccessAlert = true
         }
         isSubmitting = false
     }

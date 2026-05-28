@@ -67,7 +67,7 @@ final class RuleEngineViewModel {
             ("Source Code", "fileType", "code", "equals", "Code"),
         ]
         for (index, d) in defaults.enumerated() {
-            let rule = SortRule(name: d.0, conditionType: d.1, conditionValue: d.2, conditionOperator: d.3, targetFolderPath: d.4, priority: index)
+            let rule = SortRule(name: d.0, conditionType: d.1, conditionValue: d.2, conditionOperator: d.3, targetFolderPath: d.4, priority: index, isDefault: true)
             modelContext.insert(rule)
         }
         try? modelContext.save()

@@ -11,6 +11,7 @@ final class ScannerViewModel {
     var totalSize: Int64 = 0
 
     private let scanService = FileScanService()
+    private var accessedURL: URL?
 
     var formattedTotalSize: String {
         ByteCountFormatter.string(fromByteCount: totalSize, countStyle: .file)
@@ -29,8 +30,14 @@ final class ScannerViewModel {
         isScanning = true
         scanError = nil
         selectedDirectory = url
+        accessedURL?.stopAccessingSecurityScopedResource()
+        if let bookmarkURL = BookmarkService().accessBookmark(for: url.path) {
+            accessedURL = bookmarkURL
+        } else {
+            accessedURL = url
+        }
         do {
-            let files = try await scanService.scanDirectory(url)
+            let files = try await scanService.scanDirectory(accessedURL!)
             scannedFiles = files
             categoryCounts = Dictionary(grouping: files) { $0.category }.mapValues { $0.count }
             totalSize = files.reduce(0) { $0 + $1.size }
@@ -45,5 +52,7 @@ final class ScannerViewModel {
         categoryCounts = [:]
         totalSize = 0
         scanError = nil
+        accessedURL?.stopAccessingSecurityScopedResource()
+        accessedURL = nil
     }
 }

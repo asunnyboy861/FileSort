@@ -38,7 +38,8 @@ struct RuleListView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    if purchaseManager.canAddRule(currentCount: ruleVM.rules.count) {
+                    let defaultCount = ruleVM.rules.filter(\.isDefault).count
+                    if purchaseManager.canAddRule(currentCount: ruleVM.rules.count, defaultCount: defaultCount) {
                         showAddRule = true
                     } else {
                         showPaywall = true
