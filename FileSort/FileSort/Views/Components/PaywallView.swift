@@ -71,10 +71,10 @@ struct PaywallView: View {
         Button {
             selectedTier = tier
         } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Text(tier.displayName)
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text(tierTitle(for: tier))
                             .font(.subheadline.bold())
                         if tier == .yearly {
                             Text("Best Value")
@@ -88,11 +88,17 @@ struct PaywallView: View {
                     Text(priceText(for: tier))
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if let unitPrice = unitPriceText(for: tier) {
+                        Text(unitPrice)
+                            .font(.caption2)
+                            .foregroundStyle(.green)
+                    }
                 }
                 Spacer()
                 if selectedTier == tier {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.blue)
+                        .font(.title3)
                 }
             }
             .padding()
@@ -100,6 +106,22 @@ struct PaywallView: View {
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(selectedTier == tier ? Color.blue : Color.gray.opacity(0.3), lineWidth: selectedTier == tier ? 2 : 1))
         }
         .buttonStyle(.plain)
+    }
+
+    private func tierTitle(for tier: Tier) -> String {
+        switch tier {
+        case .monthly: return "Monthly — 1 Month"
+        case .yearly: return "Yearly — 1 Year"
+        case .lifetime: return "Lifetime — Forever"
+        }
+    }
+
+    private func unitPriceText(for tier: Tier) -> String? {
+        switch tier {
+        case .monthly: return nil
+        case .yearly: return "~$1.67/month"
+        case .lifetime: return nil
+        }
     }
 
     private var purchaseButton: some View {
